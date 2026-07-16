@@ -73,6 +73,36 @@ Each pull request should explain:
 Keep pull requests small enough to review. Resolve review feedback on the
 feature branch rather than committing directly to the target branch.
 
+### Current enforcement status
+
+This private repository does not currently have access to enforced GitHub
+rulesets. Until the repository moves to GitHub Pro or an organization on Team,
+the following requirements are mandatory project policy but are not all
+technically enforced by GitHub:
+
+- open a pull request for every change to `develop` or `main`;
+- request the owners listed in `.github/CODEOWNERS` for review;
+- do not push directly to `develop` or `main`;
+- resolve review conversations before merging;
+- use rebase merge to maintain linear history;
+- delete merged feature branches;
+- never force-push or delete `develop` or `main`.
+
+When enforced rulesets become available, configure them to match this policy.
+
+### Deferred issue forms
+
+`CODEOWNERS` and the pull-request template provide enough governance for the
+current project size. If collaborator or issue volume grows, add structured
+YAML forms under `.github/ISSUE_TEMPLATE/` for bug reports, feature requests,
+and research tasks, together with a `config.yml` file for the issue chooser.
+
+Issue forms become valuable when free-form reports make triage inconsistent.
+They should require the information needed for actionable work, such as
+reproduction steps and environment details for bugs, acceptance criteria for
+features, and hypotheses, datasets, metrics, and expected outputs for research
+tasks.
+
 ## Releases
 
 Create a release branch from an updated `develop` when the integrated work is
