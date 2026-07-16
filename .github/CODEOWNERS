@@ -1,0 +1,8 @@
+# Default reviewer for every repository change.
+* @randyRivera0
+
+# Explicit ownership for application and workflow-sensitive areas.
+/frontend/ @randyRivera0
+/backend/ @randyRivera0
+/.github/ @randyRivera0
+/requirements.txt @randyRivera0
