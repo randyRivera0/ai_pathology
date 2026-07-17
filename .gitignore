@@ -2,3 +2,8 @@ SCRATCHPAD.md
 .venv/
 __pycache__/
 *.py[cod]
+
+# Trained model artifacts
+*.h5
+*.keras
+*.ckpt
