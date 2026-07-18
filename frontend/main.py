@@ -1,49 +1,50 @@
-"""NiceGUI prototype for the LC25000 five-class workflow.
+"""NiceGUI interface for the LC25000 five-class research workflow."""
 
-This module intentionally uses mock preprocessing and prediction behavior. It
-must not be used for clinical diagnosis or decision-making.
-"""
+from __future__ import annotations
 
 import asyncio
 import base64
 from dataclasses import dataclass
+import logging
+from pathlib import Path
+import sys
 
 from nicegui import events, ui
 
 
-LC25000_CLASSES = (
-    "Colon adenocarcinoma",
-    "Benign colon tissue",
-    "Lung adenocarcinoma",
-    "Lung squamous cell carcinoma",
-    "Benign lung tissue",
-)
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from backend.inference import InferenceService, InvalidImageError
+from backend.models.protocol import ModelArtifactError
+
+
 SUPPORTED_CONTENT_TYPES = {"image/jpeg", "image/png"}
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
 
 
 @dataclass
 class WorkflowState:
-    """Track the transient state of the frontend-only workflow."""
+    """Track the currently selected image in memory."""
 
     filename: str = ""
     content_type: str = ""
     image_bytes: bytes = b""
-    preprocessed: bool = False
 
 
 state = WorkflowState()
+inference_service = InferenceService()
 
 
 def reset_result() -> None:
-    """Hide stale results when the selected image or workflow state changes."""
+    """Hide results that belong to an earlier selected image."""
 
     result_card.visible = False
-    prediction_button.disable()
+    score_lines.set_text("")
 
 
 async def handle_upload(event: events.UploadEventArguments) -> None:
-    """Validate an uploaded image and display an in-memory preview."""
+    """Validate an uploaded image envelope and display an in-memory preview."""
 
     content_type = event.file.content_type.lower()
     if content_type not in SUPPORTED_CONTENT_TYPES:
@@ -58,15 +59,14 @@ async def handle_upload(event: events.UploadEventArguments) -> None:
     state.filename = event.file.name
     state.content_type = content_type
     state.image_bytes = image_bytes
-    state.preprocessed = False
 
     encoded = base64.b64encode(image_bytes).decode("ascii")
     preview.set_source(f"data:{content_type};base64,{encoded}")
     preview.visible = True
     filename_label.set_text(state.filename)
-    status_label.set_text("Image selected — ready for mock preprocessing")
-    preprocess_button.enable()
+    status_label.set_text("Image selected - ready to predict")
     reset_result()
+    prediction_button.enable()
 
 
 def handle_rejected_upload() -> None:
@@ -75,50 +75,64 @@ def handle_rejected_upload() -> None:
     ui.notify("Upload one PNG or JPEG image up to 10 MB.", type="negative")
 
 
-def mock_preprocess() -> None:
-    """Advance the prototype to its ready state without transforming pixels."""
+async def predict() -> None:
+    """Run real model inference outside the NiceGUI event loop."""
 
-    state.preprocessed = True
-    status_label.set_text("Mock preprocessing complete — ready to predict")
-    prediction_button.enable()
-    result_card.visible = False
-    ui.notify("Preprocessing simulated", type="positive")
-
-
-async def mock_predict() -> None:
-    """Display a deterministic mock result without loading an ML model."""
-
-    if not state.preprocessed:
+    if not state.image_bytes:
         return
 
     prediction_button.disable()
-    preprocess_button.disable()
-    status_label.set_text("Running mock inference…")
-    await asyncio.sleep(0.8)
+    result_card.visible = False
+    status_label.set_text("Loading model and running inference...")
+    selected_image = state.image_bytes
 
-    class_index = sum(state.image_bytes[:256]) % len(LC25000_CLASSES)
-    confidence = 0.80 + (sum(state.image_bytes[-128:]) % 1900) / 10_000
-    predicted_class.set_text(LC25000_CLASSES[class_index])
-    confidence_label.set_text(f"{confidence:.1%}")
-    status_label.set_text("Mock prediction complete")
-    result_card.visible = True
-    prediction_button.enable()
-    preprocess_button.enable()
+    try:
+        result = await asyncio.to_thread(inference_service.predict, selected_image)
+    except InvalidImageError as error:
+        status_label.set_text("Image validation failed")
+        ui.notify(str(error), type="negative")
+    except ModelArtifactError as error:
+        status_label.set_text("Model unavailable")
+        ui.notify(str(error), type="negative", timeout=10_000)
+    except Exception:
+        logging.exception("Unexpected inference failure")
+        status_label.set_text("Inference failed")
+        ui.notify(
+            "Unexpected inference error. Check the application logs.",
+            type="negative",
+        )
+    else:
+        if selected_image != state.image_bytes:
+            status_label.set_text("Image changed - run prediction again")
+            return
+        predicted_class.set_text(result.predicted_class)
+        confidence_label.set_text(f"{result.confidence:.1%}")
+        score_lines.set_text(
+            "\n".join(
+                f"{item.class_name}: {item.score:.2%}" for item in result.scores
+            )
+        )
+        status_label.set_text("Prediction complete")
+        result_card.visible = True
+    finally:
+        prediction_button.enable()
 
 
-ui.page_title("LC25000 Classifier Prototype")
+ui.page_title("LC25000 Classifier")
 
 with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
     with ui.column().classes("gap-1"):
         ui.label("LC25000 Tissue Classifier").classes("text-3xl font-bold")
-        ui.label("Five-class histopathology workflow prototype").classes(
+        ui.label("Five-class histopathology research workflow").classes(
             "text-base text-slate-600"
         )
 
     with ui.card().classes("w-full bg-amber-50 border border-amber-200 shadow-none"):
-        ui.label("Research and educational use only").classes("font-semibold text-amber-900")
+        ui.label("Research and educational use only").classes(
+            "font-semibold text-amber-900"
+        )
         ui.label(
-            "This prototype is not a medical device and must not be used for "
+            "This application is not a medical device and must not be used for "
             "diagnosis or clinical decision-making."
         ).classes("text-amber-800")
 
@@ -135,38 +149,36 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
             ).props("accept=.png,.jpg,.jpeg").classes("w-full")
             preview = ui.image().classes("w-full max-h-80 object-contain rounded")
             preview.visible = False
-            filename_label = ui.label("No image selected").classes("text-sm text-slate-600")
+            filename_label = ui.label("No image selected").classes(
+                "text-sm text-slate-600"
+            )
 
         with ui.card().classes("grow min-w-80"):
-            ui.label("2. Run workflow").classes("text-xl font-semibold")
-            ui.label("Prototype model").classes("text-xs uppercase text-slate-500")
-            ui.label("EfficientNetB0 · mock-v1").classes("font-medium")
+            ui.label("2. Run inference").classes("text-xl font-semibold")
+            ui.label("Experiment model").classes("text-xs uppercase text-slate-500")
+            ui.label("EfficientNetB7 | exp-1").classes("font-medium")
             ui.separator()
             status_label = ui.label("Waiting for an image").classes("text-slate-600")
-            with ui.row().classes("gap-3"):
-                preprocess_button = ui.button(
-                    "Preprocess", icon="tune", on_click=mock_preprocess
-                )
-                prediction_button = ui.button(
-                    "Predict", icon="science", on_click=mock_predict
-                )
-            preprocess_button.disable()
+            prediction_button = ui.button("Predict", icon="science", on_click=predict)
             prediction_button.disable()
 
     with ui.card().classes("w-full") as result_card:
-        ui.label("Mock prediction result").classes("text-xl font-semibold")
+        ui.label("Prediction result").classes("text-xl font-semibold")
         with ui.row().classes("w-full gap-12"):
             with ui.column().classes("gap-0"):
                 ui.label("Predicted class").classes("text-xs uppercase text-slate-500")
                 predicted_class = ui.label().classes("text-lg font-semibold")
             with ui.column().classes("gap-0"):
-                ui.label("Confidence").classes("text-xs uppercase text-slate-500")
+                ui.label("Model confidence").classes("text-xs uppercase text-slate-500")
                 confidence_label = ui.label().classes("text-lg font-semibold")
             with ui.column().classes("gap-0"):
                 ui.label("Model metadata").classes("text-xs uppercase text-slate-500")
-                ui.label("EfficientNetB0 · mock-v1 · 224×224 input")
+                ui.label("EfficientNetB7 | exp-1 | 224x224 RGB input")
+        ui.label("All class scores").classes("text-sm font-semibold mt-3")
+        score_lines = ui.label().classes("text-sm whitespace-pre-line text-slate-700")
         ui.label(
-            "Simulated output for interface evaluation; no model inference was performed."
+            "Model output for research evaluation only; confidence is not a "
+            "calibrated clinical probability."
         ).classes("text-sm text-slate-500")
     result_card.visible = False
 
@@ -175,6 +187,6 @@ if __name__ in {"__main__", "__mp_main__"}:
     ui.run(
         host="127.0.0.1",
         port=8080,
-        title="LC25000 Classifier Prototype",
+        title="LC25000 Classifier",
         reload=False,
     )
