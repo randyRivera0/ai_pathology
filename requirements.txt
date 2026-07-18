@@ -1,1 +1,4 @@
 nicegui==3.14.0
+numpy==2.5.1
+Pillow==12.3.0
+tensorflow==2.20.0
