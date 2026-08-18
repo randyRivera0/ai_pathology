@@ -41,13 +41,15 @@ class InferenceService:
         """Create a service around the supplied or default classifier adapter."""
 
         if classifier is None:
-            from backend.models.lc25000_classifier import LC25000Classifier
+            from backend.models.resnet50_colon_classifier import (
+                ResNet50ColonClassifier,
+            )
 
-            classifier = LC25000Classifier()
+            classifier = ResNet50ColonClassifier()
         self.classifier = classifier
 
     def predict(self, image_bytes: bytes) -> PredictionResult:
-        """Validate uploaded bytes and return an ordered five-class result."""
+        """Validate uploaded bytes and return ordered model scores."""
 
         image = self._decode_image(image_bytes)
         raw_scores = self.classifier.predict(image)
