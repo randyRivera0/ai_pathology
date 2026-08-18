@@ -1,0 +1,25 @@
+{
+  "model_id": "resnet50-binary-colon-group-aware",
+  "experiment_id": "exp-3",
+  "artifact": "resnet50_binary_best.keras",
+  "format": "keras_v3",
+  "sha256": "cdcd06a7d5cde685bc70eeb391b93b5393806ae952379746c195ca0f66e23691",
+  "size_bytes": 98260213,
+  "tensorflow_version": "2.20.0",
+  "keras_version": "3.13.2",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "preprocessing": "keras.applications.resnet50.preprocess_input",
+  "class_mapping": {
+    "benign": 0,
+    "adenocarcinoma": 1
+  },
+  "output": "adenocarcinoma_probability",
+  "decision_threshold": 0.5,
+  "best_epoch": 2,
+  "selection_metric": "val_loss",
+  "split_manifest": "group_split_manifest.csv"
+}
