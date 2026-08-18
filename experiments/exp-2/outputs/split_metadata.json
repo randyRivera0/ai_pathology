@@ -1,0 +1,19 @@
+{
+  "dataset_id": "andrewmvd/lung-and-colon-cancer-histopathological-images",
+  "task": "binary_colon_classification",
+  "seed": 42,
+  "fractions": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "class_mapping": {
+    "benign": 0,
+    "adenocarcinoma": 1
+  },
+  "counts": {
+    "train": 7000,
+    "validation": 1500,
+    "test": 1500
+  }
+}
