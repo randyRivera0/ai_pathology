@@ -1,0 +1,27 @@
+{
+  "benign": {
+    "precision": 0.9971387696709585,
+    "recall": 1.0,
+    "f1-score": 0.998567335243553,
+    "support": 697.0
+  },
+  "adenocarcinoma": {
+    "precision": 1.0,
+    "recall": 0.9973474801061007,
+    "f1-score": 0.99867197875166,
+    "support": 754.0
+  },
+  "accuracy": 0.9986216402481047,
+  "macro avg": {
+    "precision": 0.9985693848354793,
+    "recall": 0.9986737400530503,
+    "f1-score": 0.9986196569976065,
+    "support": 1451.0
+  },
+  "weighted avg": {
+    "precision": 0.9986255840528312,
+    "recall": 0.9986216402481047,
+    "f1-score": 0.9986217123663047,
+    "support": 1451.0
+  }
+}
