@@ -1,0 +1,23 @@
+{
+  "model_id": "resnet50-binary-colon",
+  "artifact": "resnet50_binary_best.keras",
+  "format": "keras_v3",
+  "sha256": "02265f1280047a46d8c1c89826f1b331aaf834d49d6ad48d132033c0cac70594",
+  "size_bytes": 98260213,
+  "tensorflow_version": "2.20.0",
+  "keras_version": "3.13.2",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "preprocessing": "keras.applications.resnet50.preprocess_input",
+  "class_mapping": {
+    "benign": 0,
+    "adenocarcinoma": 1
+  },
+  "output": "adenocarcinoma_probability",
+  "decision_threshold": 0.5,
+  "best_epoch": 3,
+  "selection_metric": "val_loss"
+}
