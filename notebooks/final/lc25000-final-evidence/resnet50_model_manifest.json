@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "model_id": "resnet50-binary-colon-group-aware-final",
+  "artifact": "resnet50_binary_best.keras",
+  "format": "keras_v3",
+  "sha256": "e48e3afcf2521e731fa68ed4f8585cb3c19d864f5d563aae74246cd88a4d86d1",
+  "size_bytes": 98260213,
+  "tensorflow_version": "2.20.0",
+  "keras_version": "3.13.2",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "preprocessing": "explicit Caffe-style RGB-to-BGR and ImageNet mean subtraction",
+  "class_mapping": {
+    "benign": 0,
+    "adenocarcinoma": 1
+  },
+  "output": "adenocarcinoma_probability",
+  "decision_threshold": 0.5,
+  "selection_metric": "validation loss",
+  "split_manifest": "group_split_manifest.csv"
+}

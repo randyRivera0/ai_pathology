@@ -1,0 +1,14 @@
+{
+  "accuracy": 1.0,
+  "loss": 0.0004881550557911396,
+  "precision": 1.0,
+  "recall": 1.0,
+  "roc_auc": 1.0,
+  "decision_threshold": 0.5,
+  "test_samples": 1451,
+  "test_groups": 77,
+  "misclassified_images": 0,
+  "groups_with_any_error": 0,
+  "best_epoch": 4,
+  "best_validation_loss": 0.003047516103833914
+}
