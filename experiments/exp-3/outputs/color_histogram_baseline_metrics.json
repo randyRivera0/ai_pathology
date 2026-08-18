@@ -1,0 +1,41 @@
+{
+  "experiment_id": "exp-3-color-histogram-baseline",
+  "features": "32 normalized bins per RGB channel",
+  "feature_count": 96,
+  "classifier": "StandardScaler + LogisticRegression",
+  "split_manifest": "group_split_manifest.csv",
+  "test_accuracy": 0.9324603721571331,
+  "test_samples": 1451,
+  "test_groups": 77,
+  "misclassified_images": 98,
+  "groups_with_any_error": 10,
+  "resnet50_test_accuracy": 0.9986216425895691,
+  "limitation": "A high score shows that global color is predictive in this internal dataset; it is not patient-level or external clinical validation.",
+  "classification_report": {
+    "benign": {
+      "precision": 0.8925294888597641,
+      "recall": 0.9770444763271162,
+      "f1-score": 0.9328767123287671,
+      "support": 697.0
+    },
+    "adenocarcinoma": {
+      "precision": 0.9767441860465116,
+      "recall": 0.8912466843501327,
+      "f1-score": 0.9320388349514563,
+      "support": 754.0
+    },
+    "accuracy": 0.9324603721571331,
+    "macro avg": {
+      "precision": 0.9346368374531379,
+      "recall": 0.9341455803386245,
+      "f1-score": 0.9324577736401117,
+      "support": 1451.0
+    },
+    "weighted avg": {
+      "precision": 0.9362909510781015,
+      "recall": 0.9324603721571331,
+      "f1-score": 0.9324413163656436,
+      "support": 1451.0
+    }
+  }
+}
