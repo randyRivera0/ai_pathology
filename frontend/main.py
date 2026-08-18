@@ -1,4 +1,4 @@
-"""NiceGUI interface for the LC25000 five-class research workflow."""
+"""NiceGUI interface for the binary LC25000 colon research workflow."""
 
 from __future__ import annotations
 
@@ -123,7 +123,7 @@ ui.page_title("LC25000 Classifier")
 with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
     with ui.column().classes("gap-1"):
         ui.label("LC25000 Tissue Classifier").classes("text-3xl font-bold")
-        ui.label("Five-class histopathology research workflow").classes(
+        ui.label("Binary colon histopathology research workflow").classes(
             "text-base text-slate-600"
         )
 
@@ -156,7 +156,7 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
         with ui.card().classes("grow min-w-80"):
             ui.label("2. Run inference").classes("text-xl font-semibold")
             ui.label("Experiment model").classes("text-xs uppercase text-slate-500")
-            ui.label("EfficientNetB7 | exp-1").classes("font-medium")
+            ui.label("ResNet50 | exp-3 | group-aware split").classes("font-medium")
             ui.separator()
             status_label = ui.label("Waiting for an image").classes("text-slate-600")
             prediction_button = ui.button("Predict", icon="science", on_click=predict)
@@ -173,7 +173,7 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
                 confidence_label = ui.label().classes("text-lg font-semibold")
             with ui.column().classes("gap-0"):
                 ui.label("Model metadata").classes("text-xs uppercase text-slate-500")
-                ui.label("EfficientNetB7 | exp-1 | 224x224 RGB input")
+                ui.label("ResNet50 | exp-3 | 224x224 RGB input")
         ui.label("All class scores").classes("text-sm font-semibold mt-3")
         score_lines = ui.label().classes("text-sm whitespace-pre-line text-slate-700")
         ui.label(
