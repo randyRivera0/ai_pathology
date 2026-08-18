@@ -1,0 +1,9 @@
+{
+  "fraction_with_training_neighbor_at_0.99": 1.0,
+  "fraction_with_training_neighbor_at_0.995": 0.9933333333333333,
+  "fraction_with_training_neighbor_at_0.999": 0.8006666666666666,
+  "random_train_images": 7000,
+  "random_test_images": 1500,
+  "median_max_similarity": 0.9994341135025024,
+  "interpretation": "Histogram similarity is a diagnostic proxy; official group IDs define the authoritative group-aware split."
+}
