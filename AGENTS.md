@@ -55,6 +55,8 @@ You operate in a strict read-write feedback loop using the root `scratchpad.md` 
 ## Boundaries & Constraints
 <!-- Define absolute "no-go" zones to stop the agent from dangerously modifying code. -->
 <!--- NEVER auto-upgrade package versions in `package.json` without explicit request. -->
-- NEVER modify files inside the `docs` directory.
+- Files under `docs/` are curated public documentation. Modify them only when
+  documentation work is explicitly in scope; never publish drafts, credentials,
+  datasets, model weights, patient data, or unverified clinical claims.
 - NEVER auto-upgrade package versions without explicit request.
 - Stop and ask the human user if a refactor impacts more than 3 distinct files.
