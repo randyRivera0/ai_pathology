@@ -25,6 +25,7 @@ intended for a single local user.
 
 - `frontend/`: NiceGUI prototype application.
 - `backend/`: inference orchestration and independently managed models.
+- `docs/`: curated documentation of implemented architecture and limitations.
 - `experiments/`: historical training and evaluation experiments.
 - `notebooks/final/`: executed final notebook and compact evaluation evidence.
 

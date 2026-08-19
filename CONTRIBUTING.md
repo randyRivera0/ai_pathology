@@ -185,7 +185,8 @@ source of truth.
 - Define paths through configuration; never hardcode machine-specific paths.
 - Keep the five LC25000 class labels and their model-output order in one shared
   source of truth.
-- Do not modify files in `docs/` through automated agent contributions.
+- Keep `docs/` aligned with implemented behavior. Automated agents may update
+  curated documentation only when documentation work is explicitly in scope.
 - Do not upgrade dependency versions without explicit approval.
 
 Run all available checks before requesting review. Until dedicated automated
