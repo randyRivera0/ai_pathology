@@ -1,7 +1,10 @@
 SCRATCHPAD.md
 .venv/
 __pycache__/
+.pytest_cache/
 *.py[cod]
+**/data
+*.zip
 
 # Trained model artifacts
 *.h5
