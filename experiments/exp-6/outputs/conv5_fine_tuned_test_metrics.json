@@ -1,0 +1,70 @@
+{
+  "checkpoint": "resnet50_conv5_best.keras",
+  "threshold": 0.5,
+  "pooled_patch_metrics": {
+    "accuracy": 0.9676336609925678,
+    "balanced_accuracy": 0.96370830803556,
+    "precision": 0.9702336096458176,
+    "recall": 0.9787153173698213,
+    "specificity": 0.9487012987012987,
+    "f1": 0.9744560075685903,
+    "roc_auc": 0.9961579469561226,
+    "patches": 4171,
+    "cases": 6
+  },
+  "case_macro_metrics": {
+    "accuracy": {
+      "mean": 0.9705050756575572,
+      "std": 0.028822098603791896
+    },
+    "balanced_accuracy": {
+      "mean": 0.9631315183300547,
+      "std": 0.03652380475524992
+    },
+    "f1": {
+      "mean": 0.9766256811252666,
+      "std": 0.023392402884283875
+    },
+    "roc_auc": {
+      "mean": 0.9950041838773536,
+      "std": 0.00585885597599927
+    }
+  },
+  "confusion_matrix": [
+    [
+      1461,
+      79
+    ],
+    [
+      56,
+      2575
+    ]
+  ],
+  "classification_report": {
+    "non-tumour": {
+      "precision": 0.9630850362557679,
+      "recall": 0.9487012987012987,
+      "f1-score": 0.9558390578999019,
+      "support": 1540.0
+    },
+    "tumour": {
+      "precision": 0.9702336096458176,
+      "recall": 0.9787153173698213,
+      "f1-score": 0.9744560075685903,
+      "support": 2631.0
+    },
+    "accuracy": 0.9676336609925678,
+    "macro avg": {
+      "precision": 0.9666593229507927,
+      "recall": 0.96370830803556,
+      "f1-score": 0.965147532734246,
+      "support": 4171.0
+    },
+    "weighted avg": {
+      "precision": 0.9675942418633491,
+      "recall": 0.9676336609925678,
+      "f1-score": 0.9675823315940565,
+      "support": 4171.0
+    }
+  }
+}
