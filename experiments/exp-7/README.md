@@ -1,5 +1,8 @@
 # Experiment 7: HISTOPANTUM colorectal MobileNetV2
 
+The shared dataset inventory and filename contract are documented in the
+[HISTOPANTUM colorectal dataset card](../../docs/datasets/histopantum-colon.md).
+
 This experiment repeats Experiment 6 on the colorectal subset of HISTOPANTUM
 with an ImageNet-pretrained MobileNetV2. It classifies 224 x 224 H&E patches as
 `non-tumour` or `tumour` for research and educational use only.
@@ -19,11 +22,21 @@ Experiment 6 assignment (SHA-256
 The manifest contains 27,248 unique relative paths from 40 TCGA cases and 40
 slides. Every case and slide occurs in exactly one partition.
 
+In this local release, each TCGA case is treated as the patient-level grouping
+unit and has one slide. Each slide contributes multiple correlated patches, so
+patch count must not be interpreted as patient count.
+
 ## Training protocol
 
 Both phases use MobileNetV2 preprocessing embedded as a serializable Keras
 `Rescaling` layer, a binary sigmoid head, and training-only flip, rotation,
 zoom, and contrast augmentation.
+
+Training augmentation consists of horizontal and vertical flips, rotations up
+to approximately +/-90 degrees, zoom of approximately +/-10%, and contrast
+variation of approximately +/-10%. These transformations are generated in
+memory only during `model.fit()`. Validation and test receive no random
+augmentation; they receive only deterministic resizing and scaling to `[-1, 1]`.
 
 1. Train only the 1,281-parameter classification head at learning rate `1e-3`.
 2. Restore the best frozen checkpoint.
@@ -56,8 +69,10 @@ The selected checkpoint's test confusion matrix is `[[1408, 132], [70, 2561]]`.
 
 ## Comparison with Experiment 6
 
-The defensible architecture comparison uses each experiment's
-validation-selected checkpoint on the identical test split:
+The defensible architecture comparison uses this experiment and
+[Experiment 6](../exp-6/README.md) only at this explicit comparison boundary.
+Each experiment's validation-selected checkpoint is evaluated on the identical
+test split:
 
 | Metric | ResNet50 selected | MobileNetV2 selected |
 | --- | ---: | ---: |
@@ -73,6 +88,11 @@ ResNet50 performed better on every reported selected-model test metric.
 MobileNetV2's selected file is about 9.7 MB versus about 214.7 MB for ResNet50,
 so it offers a substantially smaller artifact at the cost of lower performance
 in this run. File size is not a latency or deployment benchmark.
+
+The high patch-level scores are plausible because the classes contain visible
+morphological and staining differences, the backbones start from ImageNet
+weights, and all splits come from the same acquisition domain. They demonstrate
+internal patch separation, not generalization across hospitals or datasets.
 
 ## Artifacts
 
@@ -100,7 +120,11 @@ under `outputs/` and model artifacts must not enter the repository.
 
 - The evaluation contains only six test cases from a 40-case dataset.
 - Patch-level observations within a case are correlated.
+- The 4,171 test patches must not be interpreted as 4,171 independent patients.
 - This is internal colorectal evaluation, not external or clinical validation.
+- A different 25/8/7 split would add only one test case, reduce training
+  diversity, and require both architectures to be retrained. Case-level
+  cross-validation and an external test source would provide stronger evidence.
 - The selected frozen checkpoint and fine-tuned checkpoint disagree depending
   on whether validation loss or test metrics are inspected; selection remains
   fixed by validation loss to avoid test leakage.
