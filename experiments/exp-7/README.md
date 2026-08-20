@@ -76,7 +76,7 @@ in this run. File size is not a latency or deployment benchmark.
 
 ## Artifacts
 
-- `HISTOPANTUM_Colon_MobileNetV2.ipynb`: clean Colab-ready source notebook.
+- `HISTOPANTUM_Colon_MobileNetV2.ipynb`: canonical executed Colab record.
 - `outputs/split_manifest.csv`: exact case-disjoint assignment.
 - `outputs/*_history.csv`: frozen and fine-tuning histories.
 - `outputs/*_test_predictions.csv`: per-patch probabilities and predictions.
@@ -104,5 +104,6 @@ under `outputs/` and model artifacts must not enter the repository.
 - The selected frozen checkpoint and fine-tuned checkpoint disagree depending
   on whether validation loss or test metrics are inspected; selection remains
   fixed by validation loss to avoid test leakage.
-- The clean source notebook has no retained cell outputs; the exported files
-  under `outputs/` are the committed execution evidence.
+- The executed notebook and exported files under `outputs/` preserve the Colab
+  run. The final manifest field correction was applied after execution to
+  distinguish the selected frozen model from the fine-tuning configuration.
