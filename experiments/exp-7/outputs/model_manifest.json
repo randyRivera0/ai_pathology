@@ -1,0 +1,30 @@
+{
+  "experiment_id": "exp-7",
+  "dataset": "HISTOPANTUM colorectal subset",
+  "task": "binary tumour versus non-tumour patch classification",
+  "architecture": "MobileNetV2",
+  "grouping_unit": "TCGA case ID",
+  "seed": 42,
+  "exp6_assignment_sha256": "b8bca9f2baabca3e3bf3f118a321f8e65fa146f35858f597645aaeb1df85a37a",
+  "selected_phase": "frozen",
+  "model_file": "mobilenet_v2_selected_best.keras",
+  "model_size_bytes": 9652368,
+  "model_sha256": "4d10344cd5b481d936a2471178b390cc2987c353b44fdcabae6af4a152a98c55",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "preprocessing": "serializable Rescaling(1/127.5, offset=-1)",
+  "decision_threshold": 0.5,
+  "selected_model_trainable_parameters": 1281,
+  "fine_tuning_trainable_parameters": 1512001,
+  "total_parameters": 2259265,
+  "fine_tuning_trainable_backbone_layers": 20,
+  "backbone_layers": 155,
+  "limitations": [
+    "Only 40 TCGA cases are available.",
+    "Patches within a case are correlated.",
+    "Internal colorectal evaluation only; not clinical or external validation."
+  ]
+}
