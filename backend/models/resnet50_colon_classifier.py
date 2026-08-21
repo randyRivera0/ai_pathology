@@ -1,4 +1,4 @@
-"""TensorFlow adapter for the Experiment 3 binary colon classifier."""
+"""TensorFlow adapter for the Experiment 9 binary colorectal classifier."""
 
 from __future__ import annotations
 
@@ -16,33 +16,35 @@ from backend.models.protocol import ModelArtifactError, ModelMetadata
 
 MODEL_PATH_ENV = "AI_PATHOLOGY_RESNET50_MODEL_PATH"
 EXPECTED_MODEL_SHA256 = (
-    "e48e3afcf2521e731fa68ed4f8585cb3c19d864f5d563aae74246cd88a4d86d1"
+    "6228d60d3c067d01a18c4ca118ba58af5292ecb0749efc525ab2352054fd64ae"
 )
 IMAGE_SIZE = (224, 224)
-IMAGENET_BGR_MEANS = np.array([103.939, 116.779, 123.68], dtype=np.float32)
 CLASS_NAMES = ("Benign colon tissue", "Colon adenocarcinoma")
 MODEL_METADATA = ModelMetadata(
-    model_id="resnet50-binary-colon-group-aware",
-    display_name="ResNet50 binary colon classifier",
-    version="exp-3",
+    model_id="resnet50-binary-colorectal-final",
+    display_name="ResNet50 binary colorectal classifier",
+    version="exp-9",
     class_names=CLASS_NAMES,
     input_size=IMAGE_SIZE,
 )
 
 
 class ResNet50ColonClassifier:
-    """Load and run the group-aware Experiment 3 ResNet50 artifact."""
+    """Load and run the final Experiment 9 ResNet50 artifact."""
 
     def __init__(self, model_path: Path | None = None) -> None:
-        """Configure lazy loading without affecting the Experiment 1 adapter."""
+        """Configure lazy loading of the verified Experiment 9 artifact."""
 
         project_root = Path(__file__).resolve().parents[2]
         configured_path = os.getenv(MODEL_PATH_ENV)
+        artifact_name = "resnet50_final.keras"
+        artifact_candidates = tuple(
+            (project_root / "experiments" / "exp-9").rglob(artifact_name)
+        )
         default_path = (
-            project_root
-            / "notebooks"
-            / "final"
-            / "resnet50_binary_best.keras"
+            artifact_candidates[0]
+            if len(artifact_candidates) == 1
+            else project_root / "experiments" / "exp-9" / artifact_name
         )
         self.model_path = Path(model_path or configured_path or default_path).resolve()
         self._model: tf.keras.Model | None = None
@@ -51,7 +53,7 @@ class ResNet50ColonClassifier:
 
     @property
     def metadata(self) -> ModelMetadata:
-        """Return the verified Experiment 3 model contract."""
+        """Return the verified Experiment 9 model contract."""
 
         return MODEL_METADATA
 
@@ -60,8 +62,7 @@ class ResNet50ColonClassifier:
 
         model = self._load_model()
         rgb_image = image.convert("RGB").resize(IMAGE_SIZE, Image.Resampling.NEAREST)
-        image_array = np.asarray(rgb_image, dtype=np.float32)
-        image_batch = self._preprocess(image_array)[None, ...]
+        image_batch = np.asarray(rgb_image, dtype=np.float32)[None, ...]
 
         with self._predict_lock:
             output = np.asarray(model.predict(image_batch, verbose=0), dtype=np.float64)
@@ -78,7 +79,7 @@ class ResNet50ColonClassifier:
         return (1.0 - adenocarcinoma_probability, adenocarcinoma_probability)
 
     def _load_model(self) -> tf.keras.Model:
-        """Load, verify, and cache the Experiment 3 checkpoint."""
+        """Load, verify, and cache the Experiment 9 checkpoint."""
 
         if self._model is not None:
             return self._model
@@ -89,15 +90,21 @@ class ResNet50ColonClassifier:
             if not self.model_path.is_file():
                 raise ModelArtifactError(
                     f"Model artifact not found. Set {MODEL_PATH_ENV} or place the "
-                    "final checkpoint at "
-                    "notebooks/final/resnet50_binary_best.keras."
+                    "final checkpoint under experiments/exp-9 as "
+                    "resnet50_final.keras."
                 )
             if self._sha256(self.model_path) != EXPECTED_MODEL_SHA256:
                 raise ModelArtifactError(
                     "Model SHA-256 does not match the verified final artifact."
                 )
 
-            model = tf.keras.models.load_model(self.model_path, compile=False)
+            model = tf.keras.models.load_model(
+                self.model_path,
+                custom_objects={
+                    "preprocess_input": tf.keras.applications.resnet50.preprocess_input,
+                },
+                compile=False,
+            )
             if tuple(model.input_shape[1:]) != (*IMAGE_SIZE, 3):
                 raise ModelArtifactError(
                     f"Unexpected model input shape: {model.input_shape}"
@@ -109,13 +116,6 @@ class ResNet50ColonClassifier:
 
             self._model = model
             return model
-
-    @staticmethod
-    def _preprocess(image: np.ndarray) -> np.ndarray:
-        """Apply the explicit Caffe-style preprocessing used during training."""
-
-        bgr_image = np.asarray(image, dtype=np.float32)[..., ::-1]
-        return bgr_image - IMAGENET_BGR_MEANS
 
     @staticmethod
     def _sha256(path: Path) -> str:
