@@ -1,0 +1,25 @@
+{
+  "experiment_id": "exp-8",
+  "architecture": "resnet50",
+  "dataset": "HISTOPANTUM colorectal subset",
+  "grouping_unit": "TCGA case ID",
+  "seed": 42,
+  "holdout_split": "80/20 case-disjoint (32 cv-pool / 8 test), see cv_split_assignment.csv",
+  "cross_validation": "5-fold StratifiedGroupKFold over the 80% cv-pool, grouped by case_id, stratified by case tumour-fraction tertile",
+  "final_candidate_fold": 0,
+  "selected_phase": "frozen",
+  "model_file": "resnet50_fold0_frozen.keras",
+  "model_size_bytes": 95050816,
+  "model_sha256": "9009e99dc43b011459726b3c43d7e2d0c3977213336e47e4fe9c1abbf6c1e0a8",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "decision_threshold": 0.5,
+  "limitations": [
+    "The test evaluation uses fold 0's checkpoint only; the other 4 folds contribute to the cross-validation estimate but never touch the test cases.",
+    "Only 40 TCGA cases are available in total across cv-pool and test.",
+    "Patch-level observations within a case are correlated."
+  ]
+}
