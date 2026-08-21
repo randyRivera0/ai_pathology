@@ -16,6 +16,9 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from backend.inference import InferenceService, InvalidImageError
+from backend.models.grayscale_resnet50_toy_classifier import (
+    GrayscaleResNet50ToyClassifier,
+)
 from backend.models.protocol import ModelArtifactError
 
 
@@ -37,6 +40,7 @@ class WorkflowState:
 
 state = WorkflowState()
 inference_service = InferenceService()
+grayscale_inference_service = InferenceService(GrayscaleResNet50ToyClassifier())
 
 
 def reset_result() -> None:
@@ -44,6 +48,9 @@ def reset_result() -> None:
 
     result_card.visible = False
     score_lines.set_text("")
+    grayscale_predicted_class.set_text("")
+    grayscale_confidence_label.set_text("")
+    grayscale_status.set_text("")
 
 
 def update_prediction_availability() -> None:
@@ -121,7 +128,7 @@ async def predict() -> None:
 
     prediction_button.disable()
     result_card.visible = False
-    status_label.set_text("Loading model and running inference...")
+    status_label.set_text("Running primary RGB inference...")
     selected_image = state.image_bytes
     selected_site = state.specimen_site
 
@@ -151,8 +158,35 @@ async def predict() -> None:
                 f"{item.class_name}: {item.score:.2%}" for item in result.scores
             )
         )
-        status_label.set_text("Prediction complete")
+        grayscale_status.set_text("Running experimental grayscale model...")
         result_card.visible = True
+
+        try:
+            grayscale_result = await asyncio.to_thread(
+                grayscale_inference_service.predict,
+                selected_image,
+            )
+        except Exception:
+            logging.exception("Experimental grayscale inference failure")
+            grayscale_status.set_text(
+                "Experimental grayscale result unavailable; primary result is valid."
+            )
+        else:
+            if (
+                selected_image != state.image_bytes
+                or selected_site != state.specimen_site
+            ):
+                status_label.set_text("Input changed - run prediction again")
+                result_card.visible = False
+                return
+            grayscale_predicted_class.set_text(grayscale_result.predicted_class)
+            grayscale_confidence_label.set_text(
+                f"{grayscale_result.confidence:.1%}"
+            )
+            grayscale_status.set_text(
+                "Experiment 10 | grayscale toy model | 224x224 RGB accepted"
+            )
+        status_label.set_text("Prediction complete")
     finally:
         update_prediction_availability()
 
@@ -253,6 +287,27 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
             "potentially ancillary testing. Confidence is not a calibrated "
             "clinical probability."
         ).classes("text-sm text-slate-500")
+        ui.separator().classes("my-3")
+        ui.label("Experimental grayscale comparison").classes(
+            "text-lg font-semibold text-slate-700"
+        )
+        with ui.row().classes("w-full gap-12"):
+            with ui.column().classes("gap-0"):
+                ui.label("Toy-model class").classes(
+                    "text-xs uppercase text-slate-500"
+                )
+                grayscale_predicted_class = ui.label().classes("font-semibold")
+            with ui.column().classes("gap-0"):
+                ui.label("Toy-model confidence").classes(
+                    "text-xs uppercase text-slate-500"
+                )
+                grayscale_confidence_label = ui.label().classes("font-semibold")
+        grayscale_status = ui.label().classes("text-sm text-slate-600")
+        ui.label(
+            "Experiment 10 is a short grayscale toy-model ablation with a "
+            "different training protocol and evaluation split. Its score is "
+            "not directly comparable to Experiment 9 and is not a diagnosis."
+        ).classes("text-sm text-rose-700")
     result_card.visible = False
 
 
