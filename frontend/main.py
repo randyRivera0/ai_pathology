@@ -1,4 +1,4 @@
-"""NiceGUI interface for the binary LC25000 colon research workflow."""
+"""NiceGUI interface for the binary HISTOPANTUM colorectal research workflow."""
 
 from __future__ import annotations
 
@@ -21,6 +21,8 @@ from backend.models.protocol import ModelArtifactError
 
 SUPPORTED_CONTENT_TYPES = {"image/jpeg", "image/png"}
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
+SUPPORTED_SPECIMEN_SITE = "Colon / colorectum — supported"
+UNSUPPORTED_SPECIMEN_SITE = "Other / unknown — not supported"
 
 
 @dataclass
@@ -30,6 +32,7 @@ class WorkflowState:
     filename: str = ""
     content_type: str = ""
     image_bytes: bytes = b""
+    specimen_site: str | None = None
 
 
 state = WorkflowState()
@@ -41,6 +44,31 @@ def reset_result() -> None:
 
     result_card.visible = False
     score_lines.set_text("")
+
+
+def update_prediction_availability() -> None:
+    """Enable prediction only when an image and supported site are supplied."""
+
+    if state.image_bytes and state.specimen_site == SUPPORTED_SPECIMEN_SITE:
+        prediction_button.enable()
+    else:
+        prediction_button.disable()
+
+
+def handle_specimen_site_change(event: events.ValueChangeEventArguments) -> None:
+    """Store specimen context and enforce the Experiment 9 organ scope."""
+
+    state.specimen_site = event.value
+    reset_result()
+    if state.specimen_site == SUPPORTED_SPECIMEN_SITE:
+        status_label.set_text(
+            "Image selected - ready to predict"
+            if state.image_bytes
+            else "Waiting for an image"
+        )
+    else:
+        status_label.set_text("Select supported colon/colorectal tissue to continue")
+    update_prediction_availability()
 
 
 async def handle_upload(event: events.UploadEventArguments) -> None:
@@ -64,9 +92,13 @@ async def handle_upload(event: events.UploadEventArguments) -> None:
     preview.set_source(f"data:{content_type};base64,{encoded}")
     preview.visible = True
     filename_label.set_text(state.filename)
-    status_label.set_text("Image selected - ready to predict")
+    status_label.set_text(
+        "Image selected - select colon/colorectal tissue to continue"
+        if state.specimen_site != SUPPORTED_SPECIMEN_SITE
+        else "Image selected - ready to predict"
+    )
     reset_result()
-    prediction_button.enable()
+    update_prediction_availability()
 
 
 def handle_rejected_upload() -> None:
@@ -78,13 +110,18 @@ def handle_rejected_upload() -> None:
 async def predict() -> None:
     """Run real model inference outside the NiceGUI event loop."""
 
-    if not state.image_bytes:
+    if not state.image_bytes or state.specimen_site != SUPPORTED_SPECIMEN_SITE:
+        ui.notify(
+            "Select Colon / colorectum before running inference.",
+            type="warning",
+        )
         return
 
     prediction_button.disable()
     result_card.visible = False
     status_label.set_text("Loading model and running inference...")
     selected_image = state.image_bytes
+    selected_site = state.specimen_site
 
     try:
         result = await asyncio.to_thread(inference_service.predict, selected_image)
@@ -102,8 +139,8 @@ async def predict() -> None:
             type="negative",
         )
     else:
-        if selected_image != state.image_bytes:
-            status_label.set_text("Image changed - run prediction again")
+        if selected_image != state.image_bytes or selected_site != state.specimen_site:
+            status_label.set_text("Input changed - run prediction again")
             return
         predicted_class.set_text(result.predicted_class)
         confidence_label.set_text(f"{result.confidence:.1%}")
@@ -115,15 +152,17 @@ async def predict() -> None:
         status_label.set_text("Prediction complete")
         result_card.visible = True
     finally:
-        prediction_button.enable()
+        update_prediction_availability()
 
 
-ui.page_title("LC25000 Classifier")
+ui.page_title("HISTOPANTUM Colorectal Classifier")
 
 with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
     with ui.column().classes("gap-1"):
-        ui.label("LC25000 Tissue Classifier").classes("text-3xl font-bold")
-        ui.label("Binary colon histopathology research workflow").classes(
+        ui.label("HISTOPANTUM Colorectal Tissue Classifier").classes(
+            "text-3xl font-bold"
+        )
+        ui.label("Binary colorectal histopathology research workflow").classes(
             "text-base text-slate-600"
         )
 
@@ -155,8 +194,18 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
 
         with ui.card().classes("grow min-w-80"):
             ui.label("2. Run inference").classes("text-xl font-semibold")
+            ui.select(
+                options=[SUPPORTED_SPECIMEN_SITE, UNSUPPORTED_SPECIMEN_SITE],
+                label="Known specimen site (required)",
+                on_change=handle_specimen_site_change,
+            ).props("outlined").classes("w-full")
+            ui.label(
+                "Experiment 9 assumes the image is colorectal tissue; it does "
+                "not identify the anatomical origin. Other or unknown sites are "
+                "outside the model's validated research scope."
+            ).classes("text-sm text-slate-600")
             ui.label("Experiment model").classes("text-xs uppercase text-slate-500")
-            ui.label("ResNet50 | exp-3 | group-aware split").classes("font-medium")
+            ui.label("ResNet50 | exp-9 | final locked model").classes("font-medium")
             ui.separator()
             status_label = ui.label("Waiting for an image").classes("text-slate-600")
             prediction_button = ui.button("Predict", icon="science", on_click=predict)
@@ -173,12 +222,15 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
                 confidence_label = ui.label().classes("text-lg font-semibold")
             with ui.column().classes("gap-0"):
                 ui.label("Model metadata").classes("text-xs uppercase text-slate-500")
-                ui.label("ResNet50 | exp-3 | 224x224 RGB input")
+                ui.label("ResNet50 | exp-9 | 224x224 RGB input")
         ui.label("All class scores").classes("text-sm font-semibold mt-3")
         score_lines = ui.label().classes("text-sm whitespace-pre-line text-slate-700")
         ui.label(
-            "Model output for research evaluation only; confidence is not a "
-            "calibrated clinical probability."
+            "Research image-classification output only—not a final pathology "
+            "diagnosis. Final interpretation requires specimen provenance, "
+            "clinical information, examination of the complete specimen, and "
+            "potentially ancillary testing. Confidence is not a calibrated "
+            "clinical probability."
         ).classes("text-sm text-slate-500")
     result_card.visible = False
 
@@ -187,6 +239,6 @@ if __name__ in {"__main__", "__mp_main__"}:
     ui.run(
         host="127.0.0.1",
         port=8080,
-        title="LC25000 Classifier",
+        title="HISTOPANTUM Colorectal Classifier",
         reload=False,
     )
