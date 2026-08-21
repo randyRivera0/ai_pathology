@@ -1,0 +1,21 @@
+{
+  "experiment": 9,
+  "architecture": "resnet50",
+  "model_file": "resnet50_final.keras",
+  "model_sha256": "6228d60d3c067d01a18c4ca118ba58af5292ecb0749efc525ab2352054fd64ae",
+  "model_bytes": 214693367,
+  "development_cases": 32,
+  "development_patches": 21801,
+  "test_cases": 8,
+  "test_patches": 5447,
+  "threshold": 0.5,
+  "selection_source": "Experiment 8 five-fold case-disjoint cross-validation",
+  "head_epochs": 2,
+  "fine_tune_epochs": 3,
+  "fine_tune_rule": "conv5_*; BatchNormalization frozen",
+  "limitations": [
+    "Only 40 TCGA cases are available.",
+    "Patch observations within a case are correlated.",
+    "Internal evaluation is not external or clinical validation."
+  ]
+}
