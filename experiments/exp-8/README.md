@@ -42,6 +42,38 @@ Validation loss selected fine-tuned checkpoints for ResNet50 folds 1-3 and
 MobileNetV2 folds 0-3. Frozen checkpoints were selected for ResNet50 folds 0
 and 4 and MobileNetV2 fold 4.
 
+## Validation roles and selection bias
+
+The split is case-disjoint: every TCGA case, slide, and associated patch stays
+within one group. Thus, no fold trains on patches from a case that appears in
+that fold's validation predictions. The separate eight-case holdout is also
+excluded from every cross-validation training run.
+
+However, Experiment 8 is grouped cross-validation rather than nested grouped
+cross-validation. In each run, the same held-out fold serves two roles:
+
+1. its validation loss controls early stopping and selects the best frozen or
+   fine-tuned checkpoint;
+2. predictions from that selected checkpoint produce the reported fold score.
+
+This is not cross-case patch leakage, but it is checkpoint-selection reuse. The
+reported fold and pooled OOF metrics can therefore be somewhat optimistic and
+should not be described as fully selection-independent outer-fold estimates.
+
+A stronger future comparison should use three distinct case-level roles:
+
+1. **Inner training cases:** fit model parameters.
+2. **Inner validation cases:** select epochs, checkpoints, training phase,
+   threshold, and other hyperparameters.
+3. **Outer held-out fold:** score the already selected pipeline only.
+
+After repeating that nested procedure across outer folds, cross-validation
+should choose the architecture and training recipe. A new model can then be
+trained on the complete development pool using a stopping rule fixed from the
+nested results and evaluated once on a separate, never-before-used final test
+set. The outer folds estimate the development procedure; they do not replace
+that final test set.
+
 ## Cross-validation results
 
 Mean and sample standard deviation are calculated across the five held-out
@@ -106,6 +138,8 @@ of `.keras` checkpoints and must remain outside Git.
 - Only 40 cases from one colorectal release are available.
 - Patch observations within a case are correlated.
 - Fold-level estimates are based on only six or seven cases each.
+- The same held-out fold selects checkpoints and supplies the reported fold
+  score; nested grouped CV would be required for selection-independent scores.
 - Fold 4 demonstrates substantial sensitivity to the held-out case mixture.
 - The test evaluation uses a prespecified fold-0 checkpoint trained on only the
   complement of fold 0, rather than a final model retrained on all 32 CV cases.
