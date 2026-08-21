@@ -1,0 +1,53 @@
+{
+  "checkpoint": "resnet50_fold0_frozen.keras",
+  "final_candidate_fold": 0,
+  "threshold": 0.5,
+  "pooled_patch_metrics": {
+    "accuracy": 0.8979254635579218,
+    "balanced_accuracy": 0.8680915894869303,
+    "precision": 0.8649136375354473,
+    "recall": 0.9905521110126956,
+    "specificity": 0.7456310679611651,
+    "f1": 0.9234792182769062,
+    "roc_auc": 0.9860157770573381,
+    "patches": 5447,
+    "cases": 8
+  },
+  "confusion_matrix": [
+    [
+      1536,
+      524
+    ],
+    [
+      32,
+      3355
+    ]
+  ],
+  "classification_report": {
+    "non-tumour": {
+      "precision": 0.9795918367346939,
+      "recall": 0.7456310679611651,
+      "f1-score": 0.8467475192943771,
+      "support": 2060.0
+    },
+    "tumour": {
+      "precision": 0.8649136375354473,
+      "recall": 0.9905521110126956,
+      "f1-score": 0.9234792182769062,
+      "support": 3387.0
+    },
+    "accuracy": 0.8979254635579218,
+    "macro avg": {
+      "precision": 0.9222527371350706,
+      "recall": 0.8680915894869303,
+      "f1-score": 0.8851133687856416,
+      "support": 5447.0
+    },
+    "weighted avg": {
+      "precision": 0.9082837661108921,
+      "recall": 0.8979254635579218,
+      "f1-score": 0.894460070139581,
+      "support": 5447.0
+    }
+  }
+}
