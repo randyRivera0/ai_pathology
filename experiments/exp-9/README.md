@@ -52,6 +52,32 @@ Although Experiment 8's holdout comparison favored MobileNetV2, Experiment 9
 uses ResNet50 because the cross-validation aggregates slightly favored it. This
 supports that the architecture choice followed CV rather than the holdout winner.
 
+## Relationship to the ideal validation design
+
+Experiment 9 fixes one Experiment 8 limitation by training a new model on all
+32 development cases instead of promoting an arbitrary fold checkpoint. It
+does not retroactively make Experiment 8 nested cross-validation. Experiment
+8 used each held-out fold both to select a checkpoint and to report that fold's
+score, so its CV metrics remain grouped and case-disjoint but not fully
+selection-independent.
+
+The ideal end-to-end design would be:
+
+1. train candidate models on inner training cases;
+2. select checkpoints, epochs, phase, threshold, and hyperparameters using
+   separate inner validation cases;
+3. score the locked candidate on the outer held-out fold only;
+4. repeat across outer folds and select the final recipe from those outer
+   results;
+5. retrain one model on the complete development pool with a CV-derived fixed
+   stopping rule;
+6. evaluate it once on a never-before-used final test set.
+
+The original eight-case holdout would ideally have been reserved for step 6.
+Because Experiment 8 already evaluated two candidates on those cases,
+Experiment 9's evaluation is a reused locked-holdout result. New external cases
+are now required for a pristine final performance estimate.
+
 ## Workflow
 
 Run `HISTOPANTUM_Colon_Final_ResNet50_Colab.ipynb` from top to bottom in a GPU
