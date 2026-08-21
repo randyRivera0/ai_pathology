@@ -89,8 +89,10 @@ async def handle_upload(event: events.UploadEventArguments) -> None:
     state.image_bytes = image_bytes
 
     encoded = base64.b64encode(image_bytes).decode("ascii")
-    preview.set_source(f"data:{content_type};base64,{encoded}")
-    preview.visible = True
+    image_source = f"data:{content_type};base64,{encoded}"
+    rgb_preview.set_source(image_source)
+    grayscale_preview.set_source(image_source)
+    preview_row.visible = True
     filename_label.set_text(state.filename)
     status_label.set_text(
         "Image selected - select colon/colorectal tissue to continue"
@@ -186,8 +188,27 @@ with ui.column().classes("w-full max-w-5xl mx-auto p-6 gap-6"):
                 max_file_size=MAX_FILE_SIZE_BYTES,
                 max_files=1,
             ).props("accept=.png,.jpg,.jpeg").classes("w-full")
-            preview = ui.image().classes("w-full max-h-80 object-contain rounded")
-            preview.visible = False
+            with ui.row().classes("w-full gap-4") as preview_row:
+                with ui.column().classes("grow min-w-48 gap-1"):
+                    ui.label("Original RGB model input").classes(
+                        "text-sm font-medium text-slate-700"
+                    )
+                    rgb_preview = ui.image().classes(
+                        "w-full max-h-72 object-contain rounded"
+                    )
+                with ui.column().classes("grow min-w-48 gap-1"):
+                    ui.label("Grayscale visualization").classes(
+                        "text-sm font-medium text-slate-700"
+                    )
+                    grayscale_preview = ui.image().classes(
+                        "w-full max-h-72 object-contain rounded"
+                    ).style("filter: grayscale(100%);")
+            preview_row.visible = False
+            ui.label(
+                "The grayscale view is a visual comparison only. Experiment 9 "
+                "runs inference on the original RGB image and uses its colour "
+                "information."
+            ).classes("text-xs text-slate-500")
             filename_label = ui.label("No image selected").classes(
                 "text-sm text-slate-600"
             )
