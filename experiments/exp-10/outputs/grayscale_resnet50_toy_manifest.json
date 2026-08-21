@@ -1,0 +1,25 @@
+{
+  "experiment": 10,
+  "purpose": "toy grayscale model for research GUI comparison",
+  "architecture": "resnet50",
+  "input": "RGB accepted; fixed model-internal grayscale conversion",
+  "model_file": "grayscale_resnet50_toy.keras",
+  "model_sha256": "213493463227b3b4c8e7b78006e68578866ea76b5f9a93952a0220272d80c62d",
+  "model_bytes": 214692538,
+  "selected_phase": "fine_tuned",
+  "split": {
+    "train_cases": 28,
+    "validation_cases": 6,
+    "test_cases": 6
+  },
+  "epochs": {
+    "frozen_head": 3,
+    "fine_tuning": 2
+  },
+  "threshold": 0.5,
+  "limitations": [
+    "Toy internal model",
+    "Not clinical validation",
+    "Not for diagnosis"
+  ]
+}
