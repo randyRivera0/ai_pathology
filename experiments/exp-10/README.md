@@ -42,6 +42,10 @@ This is one 3+2-epoch training run, not cross-validation.
 
 ## Run in Colab
 
+The recorded experiment was run in Google Colab with an NVIDIA T4 GPU. Runtime
+and numerical results may vary with Colab availability, software versions, and
+hardware assignment.
+
 Upload:
 
 - `HISTOPANTUM_Colon_Grayscale_Toy_Colab.ipynb`;
