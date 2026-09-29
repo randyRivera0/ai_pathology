@@ -5,6 +5,8 @@ __pycache__/
 *.py[cod]
 **/data
 *.zip
+.mypy_cache
+.env
 
 # Trained model artifacts
 *.h5

@@ -8,17 +8,13 @@ from pathlib import Path
 from threading import Lock
 
 import numpy as np
-import tensorflow as tf
+import keras
 from PIL import Image
-from tensorflow.keras.applications.efficientnet import preprocess_input
-
-from backend.models.protocol import ModelArtifactError, ModelMetadata
-
+from keras.applications.efficientnet import preprocess_input
+from caipinference.models.classifier import ModelArtifactError, ModelMetadata
 
 MODEL_PATH_ENV = "AI_PATHOLOGY_MODEL_PATH"
-EXPECTED_MODEL_SHA256 = (
-    "b746aef5199588d1d68c2c42717543171cba30ba377dca6aa740fdc09a81e97f"
-)
+EXPECTED_MODEL_SHA256 = "b746aef5199588d1d68c2c42717543171cba30ba377dca6aa740fdc09a81e97f"
 IMAGE_SIZE = (224, 224)
 CLASS_NAMES = (
     "Colon adenocarcinoma",
@@ -47,7 +43,7 @@ class LC25000Classifier:
         self.model_path = Path(
             model_path or configured_path or project_root / "models" / "model.h5"
         ).resolve()
-        self._model: tf.keras.Model | None = None
+        self._model: keras.Model | None = None
         self._load_lock = Lock()
         self._predict_lock = Lock()
 
@@ -57,7 +53,7 @@ class LC25000Classifier:
 
         return MODEL_METADATA
 
-    def predict(self, image: Image.Image) -> tuple[float, ...]:
+    def inference(self, image: Image.Image, tissue: str) -> tuple[float, ...]:
         """Return ordered softmax scores for one decoded RGB-compatible image."""
 
         model = self._load_model()
@@ -78,7 +74,7 @@ class LC25000Classifier:
 
         return tuple(float(score) for score in scores)
 
-    def _load_model(self) -> tf.keras.Model:
+    def _load_model(self) -> keras.Model:
         """Load and verify the model once, then reuse it for later predictions."""
 
         if self._model is not None:
@@ -98,15 +94,11 @@ class LC25000Classifier:
                     "Model SHA-256 does not match the verified Experiment 1 artifact."
                 )
 
-            model = tf.keras.models.load_model(self.model_path, compile=False)
+            model = keras.models.load_model(self.model_path, compile=False)
             if tuple(model.input_shape[1:]) != (*IMAGE_SIZE, 3):
-                raise ModelArtifactError(
-                    f"Unexpected model input shape: {model.input_shape}"
-                )
+                raise ModelArtifactError(f"Unexpected model input shape: {model.input_shape}")
             if model.output_shape[-1] != len(self.metadata.class_names):
-                raise ModelArtifactError(
-                    f"Unexpected model output shape: {model.output_shape}"
-                )
+                raise ModelArtifactError(f"Unexpected model output shape: {model.output_shape}")
 
             self._model = model
             return model
