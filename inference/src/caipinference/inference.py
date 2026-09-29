@@ -1,14 +1,11 @@
 """Framework-independent image inference service for the frontend."""
 
-from __future__ import annotations
-
-from dataclasses import dataclass
 from io import BytesIO
 
 from PIL import Image, UnidentifiedImageError
 
-from backend.models.protocol import ImageClassifier
-
+from caipinference.models.classifier import Classifier
+from caipinference.schemas.prediction_result import PredictionResult, ClassScore
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
@@ -17,42 +14,19 @@ class InvalidImageError(ValueError):
     """Report invalid or unsupported uploaded image content."""
 
 
-@dataclass(frozen=True)
-class ClassScore:
-    """Associate one display label with its model score."""
-
-    class_name: str
-    score: float
-
-
-@dataclass(frozen=True)
-class PredictionResult:
-    """Expose model output without leaking TensorFlow objects to the UI."""
-
-    predicted_class: str
-    confidence: float
-    scores: tuple[ClassScore, ...]
-
-
 class InferenceService:
     """Decode uploaded bytes and orchestrate one-model inference."""
 
-    def __init__(self, classifier: ImageClassifier | None = None) -> None:
+    def __init__(self, classifier: Classifier) -> None:
         """Create a service around the supplied or default classifier adapter."""
 
-        if classifier is None:
-            from backend.models.resnet50_colon_classifier import (
-                ResNet50ColonClassifier,
-            )
-
-            classifier = ResNet50ColonClassifier()
         self.classifier = classifier
 
-    def predict(self, image_bytes: bytes) -> PredictionResult:
+    def inference(self, image_bytes: bytes, tissue: str) -> PredictionResult:
         """Validate uploaded bytes and return ordered model scores."""
 
         image = self._decode_image(image_bytes)
-        raw_scores = self.classifier.predict(image)
+        raw_scores = self.classifier.inference(image, tissue)
         scores = tuple(
             ClassScore(class_name=class_name, score=score)
             for class_name, score in zip(
@@ -66,6 +40,7 @@ class InferenceService:
             predicted_class=winner.class_name,
             confidence=winner.score,
             scores=scores,
+            metadata=self.classifier.metadata,
         )
 
     @staticmethod
@@ -86,6 +61,4 @@ class InferenceService:
         except InvalidImageError:
             raise
         except (UnidentifiedImageError, OSError, ValueError) as error:
-            raise InvalidImageError(
-                "The selected image is corrupt or unreadable."
-            ) from error
+            raise InvalidImageError("The selected image is corrupt or unreadable.") from error
