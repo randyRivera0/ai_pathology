@@ -1,11 +1,11 @@
 """TensorFlow adapter for the Experiment 10 grayscale toy classifier."""
 
 import os
+from pathlib import Path
 
-from dotenv import load_dotenv
-
-from caipinference.models.resnet50_colon_classifier import ResNet50ColonClassifier
 from caipinference.models.classifier import ModelMetadata
+from caipinference.models.resnet50_colon_classifier import ResNet50ColonClassifier
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -21,7 +21,7 @@ MODEL_METADATA = ModelMetadata(
     input_size=IMAGE_SIZE,
 )
 
-model_path = os.getenv(MODEL_PATH_ENV)
+model_path = os.getenv(MODEL_PATH_ENV, str(Path("checkpoints/grayscale_resnet50_toy.keras")))
 
 gray_classifier = ResNet50ColonClassifier(
     model_path=model_path,

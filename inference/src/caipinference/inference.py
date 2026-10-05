@@ -5,7 +5,7 @@ from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
 from caipinference.models.classifier import Classifier
-from caipinference.schemas.prediction_result import PredictionResult, ClassScore
+from caipinference.schemas.prediction_result import ClassScore, PredictionResult
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 

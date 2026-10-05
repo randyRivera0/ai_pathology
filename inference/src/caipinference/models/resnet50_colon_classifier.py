@@ -1,14 +1,13 @@
 """TensorFlow adapter for the Experiment 9 and Experiment 10 binary colorectal classifiers."""
 
-from pathlib import Path
 import hashlib
+from pathlib import Path
 from threading import Lock
 
-import numpy as np
-from PIL import Image
 import keras
-
+import numpy as np
 from caipinference.models.classifier import Classifier, ModelArtifactError, ModelMetadata
+from PIL import Image
 
 
 class ResNet50ColonClassifier(Classifier):
@@ -17,9 +16,9 @@ class ResNet50ColonClassifier(Classifier):
     def __init__(self, model_path: str, model_metadata: ModelMetadata, sha256: str) -> None:
         """Configure lazy loading of the verified Experiment 9 artifact."""
 
+        super().__init__(metadata=model_metadata)
         self.model_path = Path(model_path).resolve()
         self.sha256 = sha256
-        self.metadata = model_metadata
         self._model: keras.Model | None = None
         self._load_lock = Lock()
         self._predict_lock = Lock()
