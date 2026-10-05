@@ -1,11 +1,11 @@
 """TensorFlow adapter for the Experiment 9 binary colorectal classifier."""
 
 import os
+from pathlib import Path
 
-from dotenv import load_dotenv
-
-from caipinference.models.resnet50_colon_classifier import ResNet50ColonClassifier
 from caipinference.models.classifier import ModelMetadata
+from caipinference.models.resnet50_colon_classifier import ResNet50ColonClassifier
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -21,7 +21,7 @@ MODEL_METADATA = ModelMetadata(
     input_size=IMAGE_SIZE,
 )
 
-model_path = os.getenv(MODEL_PATH_ENV)
+model_path = os.getenv(MODEL_PATH_ENV, str(Path("checkpoints/resnet50_final.keras")))
 
 rgb_classifier = ResNet50ColonClassifier(
     model_path=model_path,
