@@ -1,5 +1,5 @@
-from pydantic import BaseModel
 from caipinference.models.classifier import ModelMetadata
+from pydantic import BaseModel
 
 
 class ClassScore(BaseModel):

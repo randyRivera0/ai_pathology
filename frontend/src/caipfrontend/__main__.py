@@ -2,8 +2,8 @@
 
 from nicegui import app, ui
 
-from caipfrontend.session import session
 from caipfrontend.pages.prediction import prediction_page as root
+from caipfrontend.session import session
 
 app.on_shutdown(session.aclose)
 

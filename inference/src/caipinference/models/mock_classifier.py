@@ -1,7 +1,5 @@
-from PIL import Image
-
 from caipinference.models.classifier import Classifier, ModelMetadata
-
+from PIL import Image
 
 IMAGE_SIZE = (224, 224)
 CLASS_NAMES = ("Benign colon tissue", "Colon adenocarcinoma")
@@ -19,5 +17,5 @@ class MockClassifier(Classifier):
         self.model_metadata = model_metadata
 
     def inference(self, image: Image.Image, tissue: str) -> tuple[float, ...]:
-        adenocarcinoma_probability = float(0.9)
+        adenocarcinoma_probability = 0.9
         return (1.0 - adenocarcinoma_probability, adenocarcinoma_probability)

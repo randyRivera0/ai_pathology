@@ -23,6 +23,14 @@ class ModelMetadata(BaseModel):
 class Classifier(ABC):
     """Define the behavior required by the application inference service."""
 
+    def __init__(self, metadata: ModelMetadata):
+        self._metadata = metadata
+
+    @property
+    def metadata(self) -> ModelMetadata:
+        "Return model metadata."
+        return self._metadata
+
     @abstractmethod
     def inference(self, image: Image.Image, tissue: str) -> tuple[float, ...]:
         """Return ordered scores for one decoded image."""

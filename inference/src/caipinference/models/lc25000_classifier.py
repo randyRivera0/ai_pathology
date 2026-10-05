@@ -7,11 +7,11 @@ import os
 from pathlib import Path
 from threading import Lock
 
-import numpy as np
 import keras
-from PIL import Image
-from keras.applications.efficientnet import preprocess_input
+import numpy as np
 from caipinference.models.classifier import ModelArtifactError, ModelMetadata
+from keras.applications.efficientnet import preprocess_input
+from PIL import Image
 
 MODEL_PATH_ENV = "AI_PATHOLOGY_MODEL_PATH"
 EXPECTED_MODEL_SHA256 = "b746aef5199588d1d68c2c42717543171cba30ba377dca6aa740fdc09a81e97f"
